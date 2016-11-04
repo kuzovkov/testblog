@@ -1,0 +1,18 @@
+Справка по работе с doctrine в командной строке
+
+vendor/bin/doctrine orm:schema-tool:create     создание таблиц в БД
+vendor/bin/doctrine orm:schema-tool:drop --force   удаление таблиц
+
+vendor/bin/doctrine orm:schema-tool:update --force  обновление таблиц
+
+очистка кеша
+vendor/bin/doctrine orm:clear-cache:result
+vendor/bin/doctrine orm:clear-cache:metadata
+vendor/bin/doctrine orm:clear-cache:query
+
+Doctrine uses Proxies to connect the to database. Proxies are generated from the the Entity classes.
+
+In development mode, it generates a Proxies on every request because you could make changes to Entity classes.
+
+In production mode, it does not generate Proxies every time. For performance reason, it assumes the Proxies exist and include them directly.
+

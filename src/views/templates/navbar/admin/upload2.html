@@ -1,0 +1,14 @@
+{% extends 'admin/layout.html' %}
+{% block content %}
+
+<h4><a href="/admin">Home</a> -> Upload</h4>
+<h3>Изображения</h3>
+
+{% include 'admin/crud/simple_upload_form.html' %}
+
+{% endblock %}
+{% block bottom_js%}
+   <script type="text/javascript">
+        App.switchMenu('upload2');
+   </script>
+{% endblock %}

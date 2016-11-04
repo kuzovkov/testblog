@@ -1,0 +1,19 @@
+{% if data %}
+
+<table class="table">
+<tr>
+{% for key in data[0]|keys %}
+    <th>{{key}}</th>
+{% endfor %}
+</tr>
+{% for row in data %}
+    <tr>
+        {% for col in row %}
+            <td>{{col}}</td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+
+</table>
+
+{% endif %}

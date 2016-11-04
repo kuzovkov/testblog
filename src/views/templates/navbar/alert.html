@@ -1,0 +1,60 @@
+<style>
+#alert-wrap
+{
+    display: 'block';
+    background: rgba(0, 0, 0, 0.9);
+    height: 100%;
+    position: fixed;
+    width: 100%;
+    z-index: 9999;
+    top: 0;
+    left: 0;   
+}
+
+.alert
+{
+    position: absolute;
+    width: 300px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    margin-left: -150px;
+    margin-top: -100px;
+    background-color: #eee;
+    color: #900;
+    font-family: Verdana;
+    border-radius: 3px;
+    text-align:center;
+}
+
+#alert-text
+{
+    margin: 50px auto 50px auto;
+        
+}
+
+#alert-button
+{
+   margin: 30px auto 20px auto;
+   font-size: 20px;
+   padding: 5px 15px 5px 15px;
+}
+
+</style>
+
+<div id="alert-wrap">
+    <div class="alert grad2">
+        <div id="alert-text">{{message}}</div> 
+        <form id="alert-form" method="get" action="{{back}}">
+        <button id="alert-button">Close</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    
+    window.onkeypress = function(e){
+        if (e.keyCode == 13 ) document.getElementById('alert-form').submit();
+    };
+
+</script>

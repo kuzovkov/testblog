@@ -1,0 +1,56 @@
+
+<link rel="stylesheet" href="/css/style.css" type="text/css" media="screen, projection" />
+
+<div id="objects-wrap">
+    <div class="inner-object-wrap">
+    {% if value %}
+        {% for obj in value %}
+            <a href="#" id="{{obj.getId}}" class="inner-object" title="Удалить">{{obj.getName}}</a>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+    {% set array_object = data.model.getObjects %}
+    <hr/>
+    Выберите из существующих:
+    <div class="all-object-wrap">
+    {% for obj in array_object %}
+        <a href="#" id="{{obj.getId}}" class="all-object" title="Добавить">{{obj.getName}}</a>
+    {% endfor %}
+
+    </div>
+</div>
+
+<script>
+    function setHandlers(){
+        $('.inner-object').click(function(event){
+
+            event.preventDefault();
+            var id = this.id;
+            $.get('/admin/removetag/{{data.object.getId}}/'+id, function(data){
+                console.log(data);
+                updateObjectsWrap();
+            });
+        });
+
+        $('.all-object').click(function(event){
+            event.preventDefault();
+            var id = this.id;
+            $.get('/admin/addtag/{{data.object.getId}}/'+id, function(data){
+                console.log(data);
+                updateObjectsWrap();
+            });
+        });
+
+    }
+
+    function updateObjectsWrap(){
+        $('#objects-wrap').load('/admin/showtags/{{data.object.getId}}', function(){
+            setHandlers();
+
+        });
+    }
+
+    setHandlers();
+</script>
+

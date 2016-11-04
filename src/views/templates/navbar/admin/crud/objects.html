@@ -1,0 +1,17 @@
+<div class="inner-object-wrap">
+    {% if value %}
+        {% for obj in value %}
+            <a href="#" id="{{obj.getId}}" class="inner-object" title="Удалить">{{obj.getName}}</a>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+    {% set array_object = data.model.getObjects %}
+    <hr/>
+    Выберите из существующих:
+    <div class="all-object-wrap">
+    {% for obj in array_object %}
+        <a href="#" id="{{obj.getId}}" class="all-object" title="Добавить">{{obj.getName}}</a>
+    {% endfor %}
+
+</div>

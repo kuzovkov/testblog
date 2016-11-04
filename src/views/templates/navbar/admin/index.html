@@ -1,0 +1,31 @@
+{% extends 'admin/layout.html' %}
+{% block content %}
+<div class="myinfo">
+<table class="table">
+{% for model in data.models %}
+    <tr>
+        <td>
+            <p><a href="/admin/showlist/{{model.entity}}">{{model.name}}</a></p>
+        </td>
+        <td>
+            <p><form method="get" action="/admin/create/{{model.entity}}"><button>Create New</button></form></p>
+        </td>
+
+        <td>
+            <p><form method="get" action="/admin/showlist/{{model.entity}}"><button>List</button></form></p>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+</div>
+
+{% endblock %}
+
+{% block bottom_js%}
+   <script type="text/javascript">
+        App.switchMenu('home');
+   </script>
+{% endblock %}
+
+

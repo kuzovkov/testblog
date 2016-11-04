@@ -1,0 +1,80 @@
+{% extends 'admin/layout.html' %}
+{% block content %}
+
+
+
+<h4><a href="/admin">Home</a> -> {{data.model.entity}}</h4>
+<h3>{{data.model.name}}</h3>
+
+<p>
+    <form method="get" action="/admin/create/{{data.model.entity}}">
+        <button>Create New</button>
+    </form>
+</p>
+<table class="table">
+<tr>
+{% for col in data.model.schema_list|keys %}
+    {% if data.model.schema_list[col]['visible'] %}
+        <th><a href="/admin/showlist/{{data.model.entity}}/{{col}}{% if data.order is defined %}/{{data.order}}{% endif %}">{{data.model.schema_list[col]['name']}}</a></th>
+    {% endif %}
+{% endfor %}
+</tr>
+{% for object in data.list %}
+<tr>
+	{% for col in (data.model.schema_list|keys) %}
+        {% if data.model.schema_list[col]['visible'] %}
+            {% set method='get'~(col|capitalize) %}
+            {% if method == 'getId' %}
+                <td><a title="Edit" href="/admin/edit/{{data.model.entity}}/{{object.getId}}">{{object.getId}}</a></td>
+            {% else %}
+                {% if data.model.schema_list[col]['type'] == 'string' %}
+                    <td>{{ attribute(object, method) }}</td>
+                {% elseif data.model.schema_list[col]['type'] == 'text' %}
+                    <td>{{ attribute(object, method) | raw}}</td>
+                {% elseif data.model.schema_list[col]['type'] == 'datetime' %}
+                    <td>{{ attribute(object, method) | date ('Y/m/d H:i:s')}}</td>
+                {% elseif data.model.schema_list[col]['type'] == 'date' %}
+                    <td>{{ attribute(object, method) | date ('Y/m/d')}}</td>
+                {% elseif data.model.schema_list[col]['type'] == 'img' %}
+                    <td><img width="50" height="50" src="/{{data.upload_dir}}/{{attribute(object, method)}}"/></td>
+                {% elseif data.model.schema_list[col]['type'] == 'boolean' %}
+                    <td>{% if attribute(object, method) %} busy {% endif %}</td>
+                {% elseif data.model.schema_list[col]['type'] == 'object_array' %}
+                    <td>
+                        {% set objects = attribute(object, method) %}
+                        {% for obj in objects %}
+                            {{obj.getName}}&nbsp;
+                        {% endfor %}
+                    </td>
+                {% elseif data.model.schema_list[col]['type'] == 'array' %}
+                    <td>{{attribute(object, method)|join(',') }}</td>
+                {% endif%}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+        <td>
+            <form onsubmit="return confirmDelete({{object.getId}});" method="get" action="/admin/delete/{{data.model.entity}}/{{object.getId}}"><button>Delete</button></form>
+        </td>
+        <td>
+            <form method="get" action="/admin/edit/{{data.model.entity}}/{{object.getId}}"><button>Edit</button></form>
+        </td>
+        
+</tr>
+
+{% endfor %}
+
+</table>
+
+
+{% endblock %}
+
+{% block bottom_js%}
+   <script type="text/javascript">
+        App.switchMenu('home');
+        
+        function confirmDelete(id){
+             return confirm('Would you like delete item ' + id);
+        }
+   </script>
+
+{% endblock %}
