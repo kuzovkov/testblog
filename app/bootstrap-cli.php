@@ -5,7 +5,7 @@ require_once "vendor/autoload.php";
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 
-$paths = array("entities");
+$paths = array("src/entities");
 $isDevMode = false;
 
 // the connection configuration
