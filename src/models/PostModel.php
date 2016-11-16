@@ -63,12 +63,10 @@ class PostModel extends Model{
      * @param  $tag_id Id тега
      */
     public function addTag($post_id, $tag_id){
-        $df = new DoctrineFactory();
-        $em = $df->getEntityManager();
-        $tag = $em->find('Tag', $tag_id);
-        $post = $em->find('Post', $post_id);
+        $tag = $this->em->find('Tag', $tag_id);
+        $post = $this->em->find('Post', $post_id);
         $post->addTag($tag);
-        $em->flush();
+        $this->em->flush();
     }
 
     /**
@@ -77,11 +75,9 @@ class PostModel extends Model{
      * @param  $tag_id Id тега
      */
     public function removeTag($post_id, $tag_id){
-        $df = new DoctrineFactory();
-        $em = $df->getEntityManager();
-        $post = $em->find('Post', $post_id);
+        $post = $this->em->find('Post', $post_id);
         $post->removeTagById($tag_id);
-        $em->flush();
+        $this->em->flush();
     }
 
     /**
@@ -111,9 +107,7 @@ class PostModel extends Model{
      * @param $start начальный offset
      */
     public function getPosts($start = 0){
-        $df = new DoctrineFactory();
-        $em = $df->getEntityManager();
-        $repo = $em->getRepository('Post');
+        $repo = $this->em->getRepository('Post');
         $posts = $repo->findBy(array(), array('updated_at' => 'DESC', 'title' => 'ASC'), $this->post_per_page, $start);
         return $posts;
     }

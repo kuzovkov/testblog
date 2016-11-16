@@ -3,11 +3,12 @@
 /**
  * Class Common контроллер для обработки запросов неавторизованных пользователей
  */
-	class Common{
+	class Common extends Controller{
 	   
         private $data = array();
         
         public function __construct(){
+            parent::__construct();
             header("Content-Type: text/html; charset=utf8");
             //$this->data['login'] = Auth::getLogin();
             $this->data['templates'] = Config::$templates_dir.'/'.Config::$template;
@@ -15,11 +16,11 @@
         }
         
         public function index($params){
-            $pm = new PostModel();
-            $posts = $pm->getPosts();
+            $this->loadModel('Post');
+            $posts = $this->model->Post->getPosts();
             $this->data['posts'] = $posts;
             $this->data['upload_dir'] = Config::$upload_dir;
-            echo View::render('index.html', array('data' => $this->data));
+            echo $this->view->render('index.html', array('data' => $this->data));
     	}
 
         /**
@@ -30,11 +31,11 @@
             $req = new Request();
             if ($req->server['REQUEST_METHOD'] == 'POST'){
                 $start = (isset($params[0]) && is_numeric($params[0]))? intval($params[0]) : 0;
-                $pm = new PostModel();
-                $posts = $pm->getPosts($start);
+                $this->loadModel('Post');
+                $posts = $this->model->Post->getPosts($start);
                 $this->data['posts'] = $posts;
                 $this->data['upload_dir'] = Config::$upload_dir;
-                echo View::render('posts.html', array('data' => $this->data));
+                echo $this->view->render('posts.html', array('data' => $this->data));
             }
         }
 
@@ -54,7 +55,7 @@
                     header("Location: /");
                 }else{
                     $this->data['errmsg'] = 'bad credintials';
-                    echo View::render('auth/login.html', array('data'=>$this->data));
+                    echo $this->view->render('auth/login.html', array('data'=>$this->data));
                 }
                 exit();
             }else{
@@ -65,7 +66,7 @@
                     exit();
                 }
                 //header("Content-Type: text/html; charset=utf8");
-                echo View::render('auth/login.html', array('data'=>$this->data));
+                echo $this->view->render('auth/login.html', array('data'=>$this->data));
             }
         }
 

@@ -9,11 +9,12 @@
 /**
  * Class Admin контроллер обработки запросов в админку
  */
-class Admin{
+class Admin extends Controller{
 
     private $field_name = 'pictures';
 
     public function __construct(){
+        parent::__construct();
         if (!Auth::isAuth('admin')){
             header("Location: /");
             exit();
@@ -28,10 +29,9 @@ class Admin{
 
 
     public function index($params){
-
         $models = App::getModels();
         $this->data['models'] = $models;
-        echo View::render('admin/index.html', array('data'=>$this->data));
+        echo $this->view->render('admin/index.html', array('data'=>$this->data));
 
     }
 
@@ -41,20 +41,20 @@ class Admin{
      * */
     public function showlist($params){
         if (isset($params[0]) && file_exists(Config::$entities_dir.'/'.$params[0].'.php')){
-            $class = $params[0] . 'Model';
-            $model = new $class();
-            if (isset($params[1]) && array_key_exists($params[1],$model->schema_list)){
+            $entity = $params[0];
+            $this->loadModel($entity);
+            if (isset($params[1]) && array_key_exists($params[1],$this->model->{$entity}->schema_list)){
                 $order = (isset($params[2]) && in_array($params[2], array('ASC','DESC')))? $params[2] : 'ASC';
-                $list = $model->getlist(array($params[1]=>$order));
+                $list = $this->model->{$entity}->getlist(array($params[1]=>$order));
                 $this->data['order'] = ($order == 'ASC')? 'DESC' : 'ASC';
 
             }else
             {
-                $list = $model->getlist();
+                $list = $this->model->{$entity}->getlist();
             }
             $this->data['list'] = $list;
-            $this->data['model'] = $model;
-            echo View::render('admin/crud/list.html', array('data' => $this->data));
+            $this->data['model'] = $this->model->{$entity};
+            echo $this->view->render('admin/crud/list.html', array('data' => $this->data));
         }else{
 
         }
@@ -65,24 +65,24 @@ class Admin{
      * */
     public function create($params){
         if (isset($params[0]) && file_exists(Config::$entities_dir.'/'.$params[0].'.php')){
-            $class = $params[0] . 'Model';
-            $model = new $class();
+            $entity = $params[0];
+            $this->loadModel($entity);
             $req = new Request();
             if ($req->server['REQUEST_METHOD'] == 'GET'){
-                $this->data['model'] = $model;
+                $this->data['model'] = $this->model->{$entity};
             }else if ($req->server['REQUEST_METHOD'] == 'POST'){
                 //print_r($req->post); exit();
                 foreach($req->post as $key => $val){
-                    if (array_key_exists($key, $model->schema_edit)){
-                        $model->set->{$key} = $val;
+                    if (array_key_exists($key, $this->model->{$entity}->schema_edit)){
+                        $this->model->{$entity}->set->{$key} = $val;
                     }
                 }
                 //print_r($model->set);exit();
-                $model->create();
-                header("Location: /admin/showlist/".$params[0]);
+                $this->model->{$entity}->create();
+                header("Location: /admin/showlist/".$entity);
             }
             $this->data['action'] = 'create';
-            echo View::render('admin/crud/edit.html', array('data' => $this->data));
+            echo $this->view->render('admin/crud/edit.html', array('data' => $this->data));
         }else{
             header("Location: /admin");
         }
@@ -93,25 +93,25 @@ class Admin{
      * */
     public function edit($params){
         if (isset($params[0]) && file_exists(Config::$entities_dir.'/'.$params[0].'.php') && isset($params[1])){
-            $class = $params[0] . 'Model';
-            $model = new $class();
+            $entity = $params[0];
+            $this->loadModel($entity);
             $id = intval($params[1]);
             $req = new Request();
             if ($req->server['REQUEST_METHOD'] == 'GET'){
-                 $object = $model->getOne(array('id'=>$id));
-                 $this->data['model'] = $model;
+                 $object = $this->model->{$entity}->getOne(array('id'=>$id));
+                 $this->data['model'] = $this->model->{$entity};
                  $this->data['object'] = $object;
                  $this->data['action'] = 'edit';
             }else if ($req->server['REQUEST_METHOD'] == 'POST'){
                 foreach($req->post as $key => $val){
-                    if (array_key_exists($key, $model->schema_edit)){
-                        $model->set->{$key} = $val;
+                    if (array_key_exists($key, $this->model->{$entity}->schema_edit)){
+                        $this->model->{$entity}->set->{$key} = $val;
                     }
                 }
-                $model->update(array('id'=>$id));
+                $this->model->{$entity}->update(array('id'=>$id));
                 header("Location: /admin/showlist/".$params[0]);
             }
-            echo View::render('admin/crud/edit.html', array('data' => $this->data));
+            echo $this->view->render('admin/crud/edit.html', array('data' => $this->data));
         }else{
             header("Location: /admin");
         }
@@ -126,10 +126,9 @@ class Admin{
             $entity = $params[0];
             if (isset($params[1]) && is_numeric($params[1])){
                 $id = intval($params[1]);
-                $model = $entity . 'Model';
-                $emod = new $model();
+                $this->loadModel($entity);
                 try{
-                    $emod->delete(array('id'=>$id));
+                    $this->model->{$entity}->delete(array('id'=>$id));
                 }catch(Exception $ex){
                     header("Location: /admin/showlist/".$entity);
                 }
@@ -140,7 +139,7 @@ class Admin{
 
 
     public function imgs($params){
-        echo View::render('admin/upload.html', array('data'=>$this->data));
+        echo $this->view->render('admin/upload.html', array('data'=>$this->data));
 
     }
 
@@ -152,7 +151,7 @@ class Admin{
         if ($req->server['REQUEST_METHOD'] == 'GET'){
             $this->data['upload_url'] = '/admin/upload';
             $this->data['field_name'] = $this->field_name;
-            echo View::render('admin/upload.html',array('data'=>$this->data));
+            echo $this->view->render('admin/upload.html',array('data'=>$this->data));
         }elseif($req->server['REQUEST_METHOD'] == 'POST'){
             //file_put_contents('post_data.txt', print_r($req->server));exit();
             if (!file_exists(Config::$upload_dir) || !is_dir(Config::$upload_dir)){
@@ -201,7 +200,7 @@ class Admin{
         if ($req->server['REQUEST_METHOD'] == 'GET') {
             $this->data['upload_url'] = '/admin/upload2';
             $this->data['field_name'] = $this->field_name;
-            echo View::render('admin/upload2.html', array('data' => $this->data));
+            echo $this->view->render('admin/upload2.html', array('data' => $this->data));
         } elseif ($req->server['REQUEST_METHOD'] == 'POST') {
             $file_field = $this->field_name;
             //print_r($_FILES); exit();
@@ -360,7 +359,7 @@ class Admin{
                 $images[] = array('name'=>$file, 'origin_name'=>$this->name2original_name($file));
             }
         }
-        echo View::render('admin/crud/img_list.html', array('upload_dir'=>Config::$upload_dir, 'images'=>$images));
+        echo $this->view->render('admin/crud/img_list.html', array('upload_dir'=>Config::$upload_dir, 'images'=>$images));
     }
 
     /**
@@ -375,7 +374,7 @@ class Admin{
                 $images[] = array('name'=>$file, 'origin_name'=>$this->name2original_name($file));
             }
         }
-        echo View::render('admin/crud/img_list_select.html', array('upload_dir'=>Config::$upload_dir, 'images'=>$images));
+        echo $this->view->render('admin/crud/img_list_select.html', array('upload_dir'=>Config::$upload_dir, 'images'=>$images));
     }
 
     /**
@@ -402,8 +401,8 @@ class Admin{
             $post_id = intval($params[0]);
             if (isset($params[1]) && is_numeric($params[1])){
                 $tag_id = intval($params[1]);
-                $pm = new PostModel();
-                $pm->addTag($post_id, $tag_id);
+                $this->loadModel('Post');
+                $this->model->Post->addTag($post_id, $tag_id);
                 echo $post_id, $tag_id;
             }
         }
@@ -418,8 +417,8 @@ class Admin{
             $post_id = intval($params[0]);
             if (isset($params[1]) && is_numeric($params[1])){
                 $tag_id = intval($params[1]);
-                $pm = new PostModel();
-                $pm->removeTag($post_id, $tag_id);
+                $this->loadModel('Post');
+                $this->model->Post->removeTag($post_id, $tag_id);
                 echo $post_id, $tag_id;
             }
         }
@@ -432,11 +431,11 @@ class Admin{
     public function showtags($params){
         if (isset($params[0]) && is_numeric($params[0])){
             $post_id = intval($params[0]);
-            $pm = new PostModel();
-            $post = $pm->getOne(array('id' => $post_id));
+            $this->loadModel('Post');
+            $post = $this->model->Post->getOne(array('id' => $post_id));
             $post_tags = $post->getTags();
-            $data = array('model' => $pm);
-            echo View::render('admin/crud/objects.html', array('data' => $data, 'value' => $post_tags));
+            $data = array('model' => $this->model->Post);
+            echo $this->view->render('admin/crud/objects.html', array('data' => $data, 'value' => $post_tags));
         }
     }
 
@@ -482,7 +481,7 @@ class Admin{
             $this->data['upload_url'] = '/admin/recovery';
             $this->data['field_name'] = 'db_dump';
             $this->data['db_name'] = $db_name;
-            echo View::render('admin/upload_dump.html',array('data'=>$this->data));
+            echo $this->view->render('admin/upload_dump.html',array('data'=>$this->data));
         }elseif($req->server['REQUEST_METHOD'] == 'POST'){
             if (isset($_FILES['db_dump']['tmp_name']) && file_exists($_FILES['db_dump']['tmp_name'])){
                 ob_start();
